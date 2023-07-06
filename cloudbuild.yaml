@@ -1,0 +1,62 @@
+steps:
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    env:
+      - 'STORAGE_BUCKET=${_STORAGE_BUCKET}'
+    script: |
+      #!/usr/bin/env bash
+
+      gsutil cp gs://$STORAGE_BUCKET/api/config.yaml /workspace/api
+      gsutil cp gs://$STORAGE_BUCKET/api/private.pem /workspace/api
+      gsutil cp gs://$STORAGE_BUCKET/api/public.pem /workspace/api
+      gsutil cp gs://$STORAGE_BUCKET/api/marincor.json /workspace/api
+
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    env:
+      - 'DATABASE_URL=${_DATABASE_URL}'
+      - 'PROJECT_ID=$PROJECT_ID'
+      - 'CLOUDSQL_IP=${_CLOUDSQL_IP}'
+      - 'TUNNEL_VM=${_TUNNEL_VM}'
+    script: |
+      #!/usr/bin/env bash
+
+      gcloud compute ssh $TUNNEL_VM --project $PROJECT_ID -- -NL 5432:$CLOUDSQL_IP:5432
+
+      sleep 2
+
+      pip install pymigratedb
+      migrate execute --dbstring $DATABASE_URL --driver pgsql
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '--build-arg', 'ENVIRONMENT=${_ENVIRONMENT}', '--build-arg', 'SEC_PREFIX=${_SEC_PREFIX}', '--build-arg', 'AUTH_SERVER=${_AUTH_SERVER}', '-t', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA']
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: gcloud
+    args:
+    - 'run'
+    - 'deploy'
+    - '${_SERVICE_NAME}'
+    - '--image'
+    - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'
+    - '--region'
+    - 'us-east1'
+    - '--cpu'
+    - '${_CPUS}'
+    - '--memory'
+    - '${_MEMORY}'
+    - '--max-instances'
+    - '${_MAX_INSTANCES}'
+    - '--port'
+    - '9090'
+    - '--allow-unauthenticated'
+    - '--vpc-connector'
+    - '${_VPC_CONNECTOR}'
+    - '--vpc-egress'
+    - '${_EGRESS}'
+    - '--platform'
+    - 'managed'
+
+images:
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA'

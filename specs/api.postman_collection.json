@@ -1,0 +1,25 @@
+{
+	"info": {
+		"_postman_id": "d0820aac-3613-498e-9601-ce69744a0017",
+		"name": "Go API Template",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14376613",
+		"_collection_link": "https://gaiadevteam.postman.co/workspace/GAIA~204eaf13-4614-49d2-8980-96dfdca21644/collection/14376613-d0820aac-3613-498e-9601-ce69744a0017?action=share&creator=14376613&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "api_url",
+			"value": "https://localhost:9090"
+		}
+	]
+}

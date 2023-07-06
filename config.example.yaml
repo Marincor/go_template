@@ -1,0 +1,7 @@
+dbString: postgres://user:password@host:port/dbname
+dbLogMode: 3
+debug: true
+gcpProjectID: marincor
+storageBucket: bucketStorage
+storageBaseFolder: agata
+environment: local

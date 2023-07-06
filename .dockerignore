@@ -1,0 +1,27 @@
+#removing cache files and others
+*/__pycache__
+.venv
+*.log
+*.yaml
+!config.yaml
+.env.example
+version.md
+README.md
+Makefile
+.vscode/*
+.gitignore
+.git/*
+deploy.sh
+commands/*
+specifications/*
+tests/*
+*_test.go
+*.pem
+!private.pem
+!public.pem
+*.json
+!credentials.json
+!marincor.json
+.github/
+.githooks/
+.marincor_env
