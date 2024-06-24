@@ -1,10 +1,17 @@
 package logging
 
 import (
-	"api.default.marincor/clients/google/logging"
-	"api.default.marincor/entity"
+	"context"
+	"time"
+
+	"api.default.marincor.pt/clients/google/logging"
+	"api.default.marincor.pt/config/constants"
+	"api.default.marincor.pt/entity"
 )
 
 func Log(details *entity.LogDetails, severity string, resourceLabels *map[string]string) {
-	go logging.Log(details, severity, resourceLabels)
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(constants.DefaultContextTimeout))
+	defer cancel()
+
+	go logging.Log(ctx, details, severity, resourceLabels)
 }

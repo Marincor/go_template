@@ -1,22 +1,29 @@
 package health
 
 import (
-	"api.default.marincor/adapters/database"
-	"api.default.marincor/entity"
+	"time"
+
+	"api.default.marincor.pt/adapters/database"
+	"api.default.marincor.pt/app/appinstance"
+	"api.default.marincor.pt/entity"
 )
 
-type Repository struct{}
-
-func New() *Repository {
-	return &Repository{}
+type Repository struct {
+	database *database.Database[entity.Health]
 }
 
-func (repo *Repository) GetHealthCheck() (*entity.Health, error) {
-	health, err := database.Query(`
-		SELECT *
-		FROM health
-		WHERE sync <> $1
-	`, new(entity.Health), "2023-06-09 16:43:56")
+func New() *Repository {
+	return &Repository{
+		database: database.New[entity.Health](appinstance.Data.DB),
+	}
+}
 
-	return health, err
+func (repo *Repository) Insert(now time.Time) error {
+	_, err := repo.database.Exec("INSERT INTO health (sync) VALUES ($1)", now)
+
+	return err
+}
+
+func (repo *Repository) GetOne(now time.Time) (*entity.Health, error) {
+	return repo.database.QueryOne("SELECT sync FROM health WHERE sync = $1", now)
 }

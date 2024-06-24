@@ -4,9 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"api.default.marincor/adapters/jwt"
-	"api.default.marincor/entity"
-	"api.default.marincor/pkg/helpers"
+	"api.default.marincor.pt/entity"
+	"api.default.marincor.pt/pkg/helpers"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -19,25 +18,26 @@ func Authorize() func(context *fiber.Ctx) error {
 		authSpec := strings.Split(authBearer, " ")
 
 		if authSpec[0] != "Bearer" {
-			return helpers.CreateResponse(context, &entity.ErrorResponse{
+			helpers.CreateResponse(context, &entity.ErrorResponse{
 				Message:    "Unauthorized",
 				StatusCode: http.StatusUnauthorized,
 			}, http.StatusUnauthorized)
 		}
 
 		if authSpec[1] == "" {
-			return helpers.CreateResponse(context, &entity.ErrorResponse{
+			helpers.CreateResponse(context, &entity.ErrorResponse{
 				Message:    "Unauthorized",
 				StatusCode: http.StatusUnauthorized,
 			}, http.StatusUnauthorized)
 		}
 
-		if !jwt.Validate(authSpec[1]) {
-			return helpers.CreateResponse(context, &entity.ErrorResponse{
-				Message:    "Unauthorized",
-				StatusCode: http.StatusUnauthorized,
-			}, http.StatusUnauthorized)
-		}
+		// TODO: CHECK
+		// if !jwt.New().Validate(authSpec[1]) {
+		// 	helpers.CreateResponse(context, &entity.ErrorResponse{
+		// 		Message:    "Unauthorized",
+		// 		StatusCode: http.StatusUnauthorized,
+		// 	}, http.StatusUnauthorized)
+		// }
 
 		return context.Next()
 	}

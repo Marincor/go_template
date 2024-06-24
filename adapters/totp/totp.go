@@ -3,13 +3,18 @@ package totp
 import (
 	"errors"
 
-	"api.default.marincor/clients/iam"
-	"api.default.marincor/config/constants"
+	"api.default.marincor.pt/config/constants"
 )
+
+type TOTP struct{}
 
 var errInvalidOTPIntegration = errors.New("provider not integrated with api")
 
-func Generate(secret string) (string, error) {
+func New() *TOTP {
+	return &TOTP{}
+}
+
+func (otp *TOTP) Generate(secret string) (string, error) {
 	if constants.DefaultOTPGenerator == "iam" {
 		return generateOTPInIAM(secret)
 	}
@@ -28,7 +33,7 @@ func generateOTPInIAM(secret string) (string, error) {
 	return totp.Token, nil
 }
 
-func Validate(totp string, secret string) (bool, error) {
+func (otp *TOTP) Validate(totp string, secret string) (bool, error) {
 	if constants.DefaultOTPGenerator == "iam" {
 		return validateOTPInIAM(totp, secret)
 	}

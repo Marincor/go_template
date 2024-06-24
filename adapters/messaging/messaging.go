@@ -1,9 +1,15 @@
 package messaging
 
 import (
-	"api.default.marincor/clients/google/pubsub"
+	"api.default.marincor.pt/clients/google/pubsub"
 )
 
-func Publish(queueName string, message interface{}) {
+type Messaging struct{}
+
+func New() *Messaging {
+	return &Messaging{}
+}
+
+func (messaging *Messaging) Publish(queueName string, message interface{}) {
 	pubsub.Publish(queueName, message)
 }

@@ -1,10 +1,14 @@
 package health
 
 import (
-	constants "api.default.marincor/app/errors"
-	"api.default.marincor/app/repository/health"
-	"api.default.marincor/entity"
+	"errors"
+	"time"
+
+	"api.default.marincor.pt/app/repository/health"
+	"api.default.marincor.pt/entity"
 )
+
+var errOutOfSync = errors.New("database is out of sync")
 
 type Usecase struct {
 	repo *health.Repository
@@ -16,11 +20,21 @@ func New() *Usecase {
 	}
 }
 
-func (uc *Usecase) Check() (*entity.Health, error) {
-	testDatabase, err := uc.repo.GetHealthCheck()
-	if err != nil {
-		panic(constants.ErrDatabaseNotConnected)
+func (usecase *Usecase) Check() (*entity.Health, error) {
+	now := time.Now()
+
+	if err := usecase.repo.Insert(now); err != nil {
+		return nil, err
 	}
 
-	return testDatabase, nil
+	check, err := usecase.repo.GetOne(now)
+	if err != nil {
+		return nil, err
+	}
+
+	if check.Sync == nil || check.Sync.IsZero() {
+		return nil, errOutOfSync
+	}
+
+	return check, nil
 }

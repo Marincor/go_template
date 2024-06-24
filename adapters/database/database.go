@@ -1,52 +1,55 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"errors"
-	"log"
 
-	"api.default.marincor/clients/postgres"
-	"api.default.marincor/pkg/app"
-	"gorm.io/gorm"
+	"github.com/georgysavva/scany/v2/sqlscan"
 )
 
-var errConnectDB = errors.New("error to connect to database")
-
-// Using generics.
-func Query[T interface{}](query string, outputType T, args ...interface{}) (T, error) { //nolint:ireturn
-	gormConn, conn := Connect(app.Inst.Config.DBString, app.Inst.Config.DBLogMode, app.Inst.Config.Debug)
-	defer conn.Close()
-
-	err := gormConn.Raw(query, args...).Scan(&outputType).Error
-
-	return outputType, err
+type Database[T any] struct {
+	pool *sql.DB
 }
 
-func Exec(query string, args ...interface{}) error {
-	_, conn := Connect(app.Inst.Config.DBString, app.Inst.Config.DBLogMode, app.Inst.Config.Debug)
-	defer conn.Close()
-
-	err := conn.QueryRow(query, args...).Err()
-
-	return err
+func New[T any](pool *sql.DB) *Database[T] {
+	return &Database[T]{
+		pool: pool,
+	}
 }
 
-func QueryCount(query string, args ...interface{}) (int, error) {
-	var count int
-
-	_, conn := Connect(app.Inst.Config.DBString, app.Inst.Config.DBLogMode, app.Inst.Config.Debug)
-	defer conn.Close()
-
-	err := conn.QueryRow(query, args...).Scan(&count)
-
-	return count, err
+func (db *Database[T]) Exec(query string, args ...interface{}) (sql.Result, error) {
+	return db.pool.Exec(query, args...)
 }
 
-func Connect(dbString string, logLevel int, debug bool) (*gorm.DB, *sql.DB) {
-	gormDB, databaseConnection, err := postgres.Connect(dbString, logLevel, debug)
-	if err != nil {
-		log.Panicln(errConnectDB, err)
+func (db *Database[T]) QueryAll(query string, args ...interface{}) ([]*T, error) {
+	output := new([]*T)
+	err := sqlscan.Select(context.Background(), db.pool, output, query, args...)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = nil
 	}
 
-	return gormDB, databaseConnection
+	return *output, err
+}
+
+func (db *Database[T]) QueryOne(query string, args ...interface{}) (*T, error) {
+	output := new(T)
+	err := sqlscan.Get(context.Background(), db.pool, output, query, args...)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = nil
+	}
+
+	return output, err
+}
+
+func (db *Database[T]) QueryCount(query string, args ...interface{}) (int, error) {
+	row := db.pool.QueryRow(query, args...)
+
+	var count int
+	err := row.Scan(&count)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = nil
+	}
+
+	return count, err
 }
