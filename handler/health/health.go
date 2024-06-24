@@ -1,35 +1,50 @@
 package health
 
 import (
-	"net/http"
-
-	"api.default.marincor/app/usecases/health"
-	"api.default.marincor/entity"
-	"api.default.marincor/pkg/helpers"
+	"api.default.marincor.pt/app/usecases/health"
+	"api.default.marincor.pt/config/constants"
+	"api.default.marincor.pt/entity"
+	"api.default.marincor.pt/pkg/helpers"
 	"github.com/gofiber/fiber/v2"
 )
 
 type Handler struct {
-	uc *health.Usecase
+	usecase *health.Usecase
 }
 
 func Handle() *Handler {
 	return &Handler{
-		uc: health.New(),
+		usecase: health.New(),
 	}
 }
 
-func (handler *Handler) Check(context *fiber.Ctx) error {
-	// timeNow := time.Now().UTC()
-	if _, err := handler.uc.Check(); err != nil {
-		return helpers.CreateResponse(context, &entity.SuccessfulResponse{
-			Message:    err.Error(),
-			StatusCode: http.StatusInternalServerError,
+func (handler *Handler) Check(ctx *fiber.Ctx) error {
+	check, err := handler.usecase.Check()
+	if err != nil {
+		ctx.Locals(constants.LogDataKey, &entity.LogDetails{
+			Message:    "error to check health",
+			Reason:     err.Error(),
+			StatusCode: constants.HTTPStatusInternalServerError,
 		})
+		ctx.Locals(constants.LogSeverityKey, constants.SeverityError)
+
+		helpers.CreateResponse(ctx, &entity.ErrorResponse{
+			Message:     "error to check health",
+			Description: err.Error(),
+			StatusCode:  constants.HTTPStatusInternalServerError,
+		}, constants.HTTPStatusInternalServerError)
+
+		return ctx.Next()
 	}
 
-	return helpers.CreateResponse(context, &entity.SuccessfulResponse{
-		Message:    "OK",
-		StatusCode: http.StatusOK,
+	ctx.Locals(constants.LogDataKey, &entity.LogDetails{
+		Message:    "successfully health checked",
+		StatusCode: constants.HTTPStatusOK,
+		Response:   check,
 	})
+	ctx.Locals(constants.LogSeverityKey, constants.SeverityInfo)
+
+	helpers.CreateResponse(ctx, check, constants.HTTPStatusOK)
+
+	return ctx.Next()
 }

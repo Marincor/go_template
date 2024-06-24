@@ -3,17 +3,17 @@ package pubsub
 import (
 	"context"
 
-	"api.default.marincor/adapters/logging"
-	"api.default.marincor/entity"
-	"api.default.marincor/pkg/app"
-	"api.default.marincor/pkg/helpers"
+	"api.default.marincor.pt/adapters/logging"
+	"api.default.marincor.pt/app/appinstance"
+	"api.default.marincor.pt/entity"
+	"api.default.marincor.pt/pkg/helpers"
 	"cloud.google.com/go/pubsub"
 )
 
 func New() (context.Context, *pubsub.Client) {
 	ctx := context.Background()
 
-	client, err := pubsub.NewClient(ctx, app.Inst.Config.GcpProjectID)
+	client, err := pubsub.NewClient(ctx, appinstance.Data.Config.GcpProjectID)
 	if err != nil {
 		logging.Log(&entity.LogDetails{
 			Message: "error to create new pubsub client",
@@ -32,7 +32,7 @@ func Publish(topicID string, message interface{}) {
 		logging.Log(&entity.LogDetails{
 			Message: "error to marshal message before publishing it to messaging service",
 			Reason:  err.Error(),
-			RequestData: map[string]interface{}{
+			Request: map[string]interface{}{
 				"queue_name": topicID,
 				"message":    message,
 			},
@@ -55,11 +55,11 @@ func Publish(topicID string, message interface{}) {
 		logging.Log(&entity.LogDetails{
 			Message: "error to publish message to google pubsub",
 			Reason:  err.Error(),
-			RequestData: map[string]interface{}{
+			Request: map[string]interface{}{
 				"message":  message,
 				"topic_id": topicID,
 			},
-			ResponseData: map[string]interface{}{"server_id": serverID},
+			Response: map[string]interface{}{"server_id": serverID},
 		}, "critical", nil)
 
 		panic(err)
@@ -67,10 +67,10 @@ func Publish(topicID string, message interface{}) {
 
 	logging.Log(&entity.LogDetails{
 		Message: "message successfully published to google pubsub",
-		RequestData: map[string]interface{}{
+		Request: map[string]interface{}{
 			"message":  message,
 			"topic_id": topicID,
 		},
-		ResponseData: map[string]interface{}{"server_id": serverID},
+		Response: map[string]interface{}{"server_id": serverID},
 	}, "debug", nil)
 }

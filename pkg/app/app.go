@@ -6,29 +6,25 @@ import (
 	"log"
 	"net/http"
 
-	"api.default.marincor/adapters/logging"
-	"api.default.marincor/clients/iam"
-	"api.default.marincor/config"
-	"api.default.marincor/config/constants"
-	"api.default.marincor/entity"
-	"api.default.marincor/pkg/helpers"
+	"api.default.marincor.pt/adapters/logging"
+	"api.default.marincor.pt/app/appinstance"
+	"api.default.marincor.pt/clients/postgres"
+	"api.default.marincor.pt/config"
+	"api.default.marincor.pt/config/constants"
+	"api.default.marincor.pt/entity"
+	"api.default.marincor.pt/pkg/helpers"
 	json "github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 )
 
-type Application struct {
-	Config *config.Config
-	Server *fiber.App
-}
-
-var Inst *Application
-
 func ApplicationInit() {
 	configs := config.New()
 
-	iam.New()
+	if constants.Environment != constants.Test {
+		// iam.New()
+	}
 
-	Inst = &Application{
+	appinstance.Data = &appinstance.Application{
 		Config: configs,
 		Server: fiber.New(fiber.Config{
 			ServerHeader: "Death Star",
@@ -38,14 +34,16 @@ func ApplicationInit() {
 			Prefork:      constants.Prefork,
 		}),
 	}
+
+	appinstance.Data.DB = postgres.Connect(appinstance.Data.Config.DBString)
 }
 
 func Setup() {
 	var err error
 	if constants.UseTLS {
-		err = Inst.Server.ListenTLS(fmt.Sprintf(":%s", constants.Port), "cert.pem", "key.pem")
+		err = appinstance.Data.Server.ListenTLS(fmt.Sprintf(":%s", constants.Port), "cert.pem", "key.pem")
 	} else {
-		err = Inst.Server.Listen(fmt.Sprintf(":%s", constants.Port))
+		err = appinstance.Data.Server.Listen(fmt.Sprintf(":%s", constants.Port))
 	}
 
 	if errors.Is(err, http.ErrServerClosed) {
@@ -53,7 +51,7 @@ func Setup() {
 	}
 }
 
-func customErrorHandler(context *fiber.Ctx, err error) error {
+func customErrorHandler(ctx *fiber.Ctx, err error) error {
 	var code int = fiber.StatusInternalServerError
 	var capturedError *fiber.Error
 	message := "unknown error"
@@ -78,14 +76,59 @@ func customErrorHandler(context *fiber.Ctx, err error) error {
 
 	go logging.Log(
 		&entity.LogDetails{
-			Message:     message,
-			Reason:      err.Error(),
-			StatusCode:  code,
-			RequestData: string(context.Body()),
+			Message:  message,
+			Method:   ctx.Method(),
+			Reason:   err.Error(),
+			RemoteIP: ctx.IP(),
+			Request: map[string]interface{}{
+				"body":       string(ctx.BodyRaw()),
+				"query":      ctx.Queries(),
+				"url_params": ctx.AllParams(),
+			},
+			StatusCode: code,
+			URLpath:    ctx.Path(),
 		},
 		"critical",
 		nil,
 	)
 
-	return helpers.CreateResponse(context, errorResponse, code) //nolint: wrapcheck
+	helpers.CreateResponse(ctx, errorResponse, code) //nolint: wrapcheck
+
+	return nil
+}
+
+func Log(ctx *fiber.Ctx) error {
+	logSeverity := ctx.Locals(constants.LogSeverityKey)
+
+	payload := new(entity.LogDetails)
+	bytedata, _ := helpers.Marshal(ctx.Locals(constants.LogDataKey))
+	helpers.Unmarshal(bytedata, &payload) //nolint: errcheck
+
+	if logSeverity == nil {
+		logSeverity = "debug"
+	}
+
+	body := map[string]interface{}{}
+	helpers.Unmarshal(ctx.BodyRaw(), &body) //nolint: errcheck
+
+	request := map[string]interface{}{
+		"body":       body,
+		"query":      ctx.Queries(),
+		"url_params": ctx.AllParams(),
+	}
+
+	severity := fmt.Sprintf("%v", logSeverity)
+
+	logging.Log(&entity.LogDetails{
+		Message:    payload.Message,
+		StatusCode: payload.StatusCode,
+		Reason:     payload.Reason,
+		Response:   payload.Response,
+		Request:    request,
+		Method:     ctx.Method(),
+		RemoteIP:   ctx.IP(),
+		URLpath:    ctx.Path(),
+	}, severity, nil)
+
+	return nil
 }

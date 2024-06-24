@@ -1,10 +1,14 @@
 package main
 
-import "api.default.marincor/pkg/app"
+import (
+	"api.default.marincor.pt/pkg/app"
+)
 
 func main() {
 	app.ApplicationInit()
-	app.Inst.Server = route()
+	// defer appinstance.Data.DB.Close()
+
+	// appinstance.Data.Server = route()
 
 	// Listening to Server
 	app.Setup()

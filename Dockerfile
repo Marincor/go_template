@@ -13,22 +13,24 @@ FROM golang:1.20-alpine as final
 ARG ENVIRONMENT
 ARG AUTH_SERVER
 ARG SEC_PREFIX
+ARG PROJECT
 
 WORKDIR /go/src/app
 
-COPY --from=builder /go/bin/api.default.marincor /go/bin/
+COPY --from=builder /go/bin/api.default.marincor.pt /go/bin/
 COPY --from=builder /go/src/app/private.pem .
 COPY --from=builder /go/src/app/config.yaml .
-COPY --from=builder /go/src/app/marincor.json .
+COPY --from=builder /go/src/app/innovation.json .
 
 EXPOSE 9090
 
-ENV CREDENTIALS=/go/src/app/marincor.json
+ENV INNOVATION_CREDENTIALS=/go/src/app/innovation.json
 ENV AUTH_SERVER=$AUTH_SERVER
 ENV SEC_PREFIX=$SEC_PREFIX
 ENV ENVIRONMENT=$ENVIRONMENT
+ENV PROJECT=$PROJECT
 
 RUN apk add dumb-init
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
-CMD api.default.marincor
+CMD api.default.marincor.pt

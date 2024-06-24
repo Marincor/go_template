@@ -1,11 +1,12 @@
-package postgres
+package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
-	// Import postgres.
-	_ "github.com/lib/pq"
+	// Import mysql.
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func Connect(dbString string) *sql.DB {
@@ -13,7 +14,7 @@ func Connect(dbString string) *sql.DB {
 	const maxOpenConnection = 30
 	const connectionMaxLifetime = 60
 
-	pool, err := sql.Open("postgres", dbString)
+	pool, err := sql.Open("mysql", fmt.Sprintf("%s?%s", dbString, "charset=utf8mb4&parseTime=True&loc=Local"))
 	if err != nil {
 		panic(err)
 	}
@@ -26,7 +27,7 @@ func Connect(dbString string) *sql.DB {
 		panic(err)
 	}
 
-	log.Println("postgres database connected successfully")
+	log.Println("mysql database connected successfully")
 
 	return pool
 }

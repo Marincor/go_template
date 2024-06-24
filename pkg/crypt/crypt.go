@@ -9,8 +9,8 @@ import (
 	"errors"
 	"os"
 
-	"api.default.marincor/adapters/logging"
-	"api.default.marincor/entity"
+	"api.default.marincor.pt/adapters/logging"
+	"api.default.marincor.pt/entity"
 	"golang.org/x/crypto/bcrypt"
 )
 

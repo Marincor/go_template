@@ -3,5 +3,9 @@ dbLogMode: 3
 debug: true
 gcpProjectID: marincor
 storageBucket: bucketStorage
-storageBaseFolder: agata
+storageBaseFolder: assets
+mailgunKey:
+mailgunDomain:
+emailSenderAddress:
+emailSenderLabel:
 environment: local

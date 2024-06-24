@@ -1,25 +1,13 @@
 package logging
 
 import (
-	"api.default.marincor/config/constants"
-	"api.default.marincor/entity"
-	gcpLogging "github.com/INDICO-INNOVATION/gcp_logging_easycall"
+	"context"
+
+	"api.default.marincor.pt/config/constants"
+	"api.default.marincor.pt/entity"
 )
 
-func Log(message *entity.LogDetails, severity string, resourceLabels *map[string]string) {
-	logMessage := &gcpLogging.Logger{
-		User:         message.User,
-		Message:      message.Message,
-		Reason:       message.Reason,
-		RemoteIp:     message.RemoteIP,
-		Method:       message.Method,
-		Urlpath:      message.URLpath,
-		StatusCode:   message.StatusCode,
-		RequestData:  message.RequestData,
-		ResponseData: message.ResponseData,
-		SessionId:    message.SessionID,
-	}
-
+func Log(_ context.Context, message *entity.LogDetails, severity string, resourceLabels *map[string]string) {
 	labels := map[string]string{"service": constants.MainServiceName}
 	if resourceLabels != nil {
 		for k, v := range *resourceLabels {
@@ -27,12 +15,13 @@ func Log(message *entity.LogDetails, severity string, resourceLabels *map[string
 		}
 	}
 
-	gcpLogging.Log(
-		constants.GcpProjectID,
-		constants.MainLoggerName,
-		logMessage,
-		severity,
-		"api",
-		labels,
-	)
+	// TODO: IMPLEMENT LOGGING 
+	// gcpLogging.Log(
+	// 	constants.GcpProjectID,
+	// 	constants.MainLoggerName,
+	// 	message,
+	// 	severity,
+	// 	"api",
+	// 	labels,
+	// )
 }
