@@ -5,7 +5,7 @@ A little introduction here...
 <hr />
 
 ## **Requirements**
-- Golang 1.21 or higher
+- Golang 1.22 or higher
 - Openssl3
 
 <hr />
@@ -151,3 +151,22 @@ While CI/CD is running pay attention if the specified files will be copied and i
 ├── README.md
 └── route.go
 ```
+
+## DEBUG LAUNCH JSON
+
+``` {
+    // Use o IntelliSense para saber mais sobre os atributos possíveis.
+    // Focalizar para exibir as descrições dos atributos existentes.
+    // Para obter mais informações, acesse: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Golang",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

@@ -3,10 +3,8 @@ package mailgun
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"html/template"
-	"net/http"
 
 	"api.default.marincor.pt/adapters/logging"
 	"api.default.marincor.pt/app/appinstance"
@@ -81,6 +79,7 @@ func (mailgun *Mailgun) Send(to string, messageAttr *entity.MessageAttributes) {
 
 	form, contentType, err := helpers.WriteFormData(emailData)
 	if err != nil {
+		fmt.Println(contentType)
 		go logging.Log(&entity.LogDetails{
 			Message: "error to parse mailgun email body",
 			Reason:  err.Error(),
@@ -90,7 +89,7 @@ func (mailgun *Mailgun) Send(to string, messageAttr *entity.MessageAttributes) {
 		return
 	}
 
-	TODO: MAKE REQUEST HTTP
+	// TODO: MAKE REQUEST HTTP
 	// request := requestsnippet.Request{
 	// 	Method: http.MethodPost,
 	// 	URI:    mailgun.APIHost,
@@ -101,45 +100,45 @@ func (mailgun *Mailgun) Send(to string, messageAttr *entity.MessageAttributes) {
 	// 	Body: form,
 	// }
 
-	response, err := request.Call()
-	if err != nil {
-		logging.Log(&entity.LogDetails{
-			Message:  "error to send email through mailgun",
-			Reason:   err.Error(),
-			Request:  request,
-			Response: response,
-		}, "critical", nil)
+	// response, err := request.Call()
+	// if err != nil {
+	// 	logging.Log(&entity.LogDetails{
+	// 		Message:  "error to send email through mailgun",
+	// 		Reason:   err.Error(),
+	// 		Request:  request,
+	// 		Response: response,
+	// 	}, "critical", nil)
 
-		return
-	}
+	// 	return
+	// }
 
-	if !helpers.Contains(constants.HTTPStatusesOk, fmt.Sprintf("%d", response.StatusCode)) {
-		logging.Log(&entity.LogDetails{
-			Message:    "status code error while sending email through mailgun",
-			Request:    request,
-			Response:   string(response.Message),
-			StatusCode: response.StatusCode,
-		}, "critical", nil)
+	// if !helpers.Contains(constants.HTTPStatusesOk, fmt.Sprintf("%d", response.StatusCode)) {
+	// 	logging.Log(&entity.LogDetails{
+	// 		Message:    "status code error while sending email through mailgun",
+	// 		Request:    request,
+	// 		Response:   string(response.Message),
+	// 		StatusCode: response.StatusCode,
+	// 	}, "critical", nil)
 
-		return
-	}
+	// 	return
+	// }
 
-	var responseMessage mailgunResponse
-	err = json.Unmarshal(response.Message, &responseMessage)
-	if err != nil {
-		logging.Log(&entity.LogDetails{
-			Message:  "error to unmarshal mailgun response",
-			Reason:   err.Error(),
-			Request:  request,
-			Response: string(response.Message),
-		}, "critical", nil)
+	// var responseMessage mailgunResponse
+	// err = json.Unmarshal(response.Message, &responseMessage)
+	// if err != nil {
+	// 	logging.Log(&entity.LogDetails{
+	// 		Message:  "error to unmarshal mailgun response",
+	// 		Reason:   err.Error(),
+	// 		Request:  request,
+	// 		Response: string(response.Message),
+	// 	}, "critical", nil)
 
-		return
-	}
+	// 	return
+	// }
 
 	logging.Log(&entity.LogDetails{
-		Message:  "email successfully sent through mailgun",
-		Request:  request,
-		Response: responseMessage,
+		Message: "email successfully sent through mailgun",
+		// Request:  request,
+		// Response: responseMessage,
 	}, "info", nil)
 }
