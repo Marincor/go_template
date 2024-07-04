@@ -15,20 +15,13 @@ import (
 )
 
 type Config struct {
-	Port               string `json:"port"`
-	DBString           string `json:"database_url"`
-	DBLogMode          int    `json:"db_log_mode,string"`
-	GcpProjectID       string `json:"project_id"`
-	StorageBucket      string `json:"storage_bucket"`
-	StorageBaseFolder  string `json:"storage_base_folder"`
-	MailGunDomain      string `json:"mailgun_domain"`
-	MailGunKey         string `json:"mailgun_key"`
-	EmailSenderAddress string `json:"email_sender_address"`
-	EmailSenderLabel   string `json:"email_sender_label"`
+	DbHost string
+	DbName string
 }
 
 func New() *Config {
 	if constants.UseSecretManager {
+		// TODO: CHECK SECRET MANAGER AWSS
 		return setupSecretManager()
 	}
 
@@ -40,8 +33,8 @@ func setupLocal() *Config {
 
 	_, file, _, _ := runtime.Caller(0) //nolint: dogsled
 
-	viper.SetConfigName("config.yaml")
-	viper.SetConfigType("yaml")
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
 	viper.AddConfigPath(filepath.Join(filepath.Dir(file), "../"))
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -55,7 +48,7 @@ func setupLocal() *Config {
 
 	if constants.Environment == constants.Test {
 		log.Printf("Using Test Database")
-		config.DBString = os.Getenv("TEST_DATABASE_URL")
+		config.DbHost = os.Getenv("TEST_DATABASE_URL")
 	}
 
 	return config

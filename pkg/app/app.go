@@ -1,14 +1,15 @@
 package app
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"api.default.marincor.pt/adapters/logging"
 	"api.default.marincor.pt/app/appinstance"
-	"api.default.marincor.pt/clients/postgres"
 	"api.default.marincor.pt/config"
 	"api.default.marincor.pt/config/constants"
 	"api.default.marincor.pt/entity"
@@ -26,32 +27,52 @@ func ApplicationInit() {
 
 	appinstance.Data = &appinstance.Application{
 		Config: configs,
-		Server: fiber.New(fiber.Config{
-			ServerHeader: "Death Star",
-			ErrorHandler: customErrorHandler,
-			JSONEncoder:  json.Marshal,
-			JSONDecoder:  json.Unmarshal,
-			Prefork:      constants.Prefork,
-		}),
+		Server: &http.Server{
+			Addr:    fmt.Sprintf(":%s", constants.Port),
+			Handler: CustomErrorHandler{},
+			TLSConfig: &tls.Config{
+				ServerName: constants.ServerName,
+			},
+			ErrorLog: log.New(os.Stderr, fmt.Sprintf("[%s] ", constants.ServerName), log.LstdFlags),
+		},
 	}
 
-	appinstance.Data.DB = postgres.Connect(appinstance.Data.Config.DBString)
+	// TODO: CHECK
+	// appinstance.Data.DB = postgres.Connect(appinstance.Data.Config.DBString)
 }
 
 func Setup() {
-	var err error
-	if constants.UseTLS {
-		err = appinstance.Data.Server.ListenTLS(fmt.Sprintf(":%s", constants.Port), "cert.pem", "key.pem")
+	if !constants.UseTLS {
+		// err = appinstance.Data.Server.Listen(fmt.Sprintf(":%s", constants.Port))
+		log.Fatal(appinstance.Data.Server.ListenAndServe())
 	} else {
-		err = appinstance.Data.Server.Listen(fmt.Sprintf(":%s", constants.Port))
+		// err = appinstance.Data.Server.ListenAndServeTLS(fmt.Sprintf(":%s", constants.Port), "cert.pem", "key.pem")
+		certPem, err := os.ReadFile("cert.pem")
+		if err != nil {
+			log.Fatalf("Failed to read CA certificate: %v", err)
+		}
+
+		keyPem, err := os.ReadFile("key.pem")
+		if err != nil {
+			log.Fatalf("Failed to read Key certificate: %v", err)
+		}
+
+		fmt.Println((certPem))
+
+		log.Fatal(appinstance.Data.Server.ListenAndServeTLS(string(certPem), string(keyPem)))
 	}
 
-	if errors.Is(err, http.ErrServerClosed) {
-		log.Fatal(err)
-	}
 }
 
-func customErrorHandler(ctx *fiber.Ctx, err error) error {
+type CustomErrorHandler struct{}
+
+// ServeHTTP implementa a interface http.Handler.
+func (ceh CustomErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Simule um erro (por exemplo, página não encontrada).
+	http.Error(w, "Página não encontrada", http.StatusNotFound)
+}
+
+func customErrorHandlerss(ctx *fiber.Ctx, err error) error {
 	var code int = fiber.StatusInternalServerError
 	var capturedError *fiber.Error
 	message := "unknown error"

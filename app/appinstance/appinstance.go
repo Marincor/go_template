@@ -3,14 +3,15 @@ package appinstance
 import (
 	"database/sql"
 
+	"net/http"
+
 	"api.default.marincor.pt/config"
-	"github.com/gofiber/fiber/v2"
 )
 
 type Application struct {
 	Config *config.Config
 	DB     *sql.DB
-	Server *fiber.App
+	Server *http.Server
 }
 
 var Data *Application

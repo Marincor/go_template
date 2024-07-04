@@ -11,6 +11,7 @@ import (
 
 const (
 	Port                      = "9090"
+	ServerName                = "Batata"
 	LogDataKey                = "payload"
 	LogSeverityKey            = "log_severity"
 	MainLoggerName            = "health"
