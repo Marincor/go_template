@@ -30,7 +30,7 @@ func Connect(dbHost string, dbName string) (*mongo.Database, *context.Context) {
 		panic(err)
 	}
 
-	log.Println("postgres database connected successfully")
+	log.Println("mongodb database connected successfully")
 
 	return mongoClient.Database(dbName), &ctx
 }

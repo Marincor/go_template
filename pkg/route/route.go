@@ -25,11 +25,14 @@ func Routes() *entity.Router {
 
 	r := newRouter(middleware.Logger())
 
-	r.Group(func(r *entity.Router) {
-		// r.Use(middleware.Logger())
+	r.Use(middleware.ContentType())
 
-		r.Get("/health/check", health.Handle().Check)
-		r.Get("/health/check/list", health.Handle().List)
+	r.Use(middleware.CORSMiddleware())
+
+	r.Group(func(route *entity.Router) {
+
+		route.Get("/health/check", health.Handle().Check)
+		route.Get("/health/check/list", health.Handle().List)
 	})
 
 	// appinstance.Data.Server.Use(logger.New())

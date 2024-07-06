@@ -25,7 +25,6 @@ func ApplicationInit() {
 		Config:    configs,
 		Server: &http.Server{
 			Addr: fmt.Sprintf(":%s", constants.Port),
-
 			TLSConfig: &tls.Config{
 				ServerName: constants.ServerName,
 			},
