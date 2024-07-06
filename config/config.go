@@ -68,7 +68,8 @@ func setupSecretManager() *Config {
 			Message:  "error to parse secrets",
 			Reason:   err.Error(),
 			Response: secretList,
-		}, "critical", nil)
+			Severity: string(constants.SeverityCritical),
+		})
 
 		panic(err)
 	}
@@ -79,7 +80,8 @@ func setupSecretManager() *Config {
 			Message:  "error to parse secrets",
 			Reason:   err.Error(),
 			Response: secretBytes,
-		}, "critical", nil)
+			Severity: string(constants.SeverityCritical),
+		})
 
 		panic(err)
 	}

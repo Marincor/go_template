@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"api.default.marincor.pt/adapters/logging"
+	"api.default.marincor.pt/config/constants"
 	"api.default.marincor.pt/entity"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,9 +21,10 @@ func ParsePrivateKey() *rsa.PrivateKey {
 	priv, err := os.ReadFile("private.pem")
 	if err != nil {
 		go logging.Log(&entity.LogDetails{
-			Message: "could not get private key file",
-			Reason:  err.Error(),
-		}, "critical", nil)
+			Message:  "could not get private key file",
+			Reason:   err.Error(),
+			Severity: string(constants.SeverityCritical),
+		})
 
 		panic("could not get private key file.")
 	}
@@ -32,9 +34,10 @@ func ParsePrivateKey() *rsa.PrivateKey {
 	privateKey, err := x509.ParsePKCS8PrivateKey(privatePem.Bytes)
 	if err != nil {
 		go logging.Log(&entity.LogDetails{
-			Message: "could not parse private key",
-			Reason:  err.Error(),
-		}, "critical", nil)
+			Message:  "could not parse private key",
+			Reason:   err.Error(),
+			Severity: string(constants.SeverityCritical),
+		})
 
 		panic("could not parse private key")
 	}
@@ -42,8 +45,9 @@ func ParsePrivateKey() *rsa.PrivateKey {
 	private, ok := privateKey.(*rsa.PrivateKey)
 	if !ok {
 		go logging.Log(&entity.LogDetails{
-			Message: "error to assert type rsa.PrivateKey for private.pem",
-		}, "critical", nil)
+			Message:  "error to assert type rsa.PrivateKey for private.pem",
+			Severity: string(constants.SeverityCritical),
+		})
 
 		panic("error to assert type rsa.PrivateKey for private.pem")
 	}
@@ -56,9 +60,10 @@ func Encrypt(data string) ([]byte, error) {
 	decoded, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		go logging.Log(&entity.LogDetails{
-			Message: "could not decode string to encrypt",
-			Reason:  err.Error(),
-		}, "critical", nil)
+			Message:  "could not decode string to encrypt",
+			Reason:   err.Error(),
+			Severity: string(constants.SeverityCritical),
+		})
 
 		return nil, err
 	}
@@ -66,9 +71,10 @@ func Encrypt(data string) ([]byte, error) {
 	plainText, err := rsa.EncryptPKCS1v15(rand.Reader, &private.PublicKey, decoded)
 	if err != nil {
 		go logging.Log(&entity.LogDetails{
-			Message: "could not encrypt",
-			Reason:  err.Error(),
-		}, "critical", nil)
+			Message:  "could not encrypt",
+			Reason:   err.Error(),
+			Severity: string(constants.SeverityCritical),
+		})
 
 		return nil, err
 	}
@@ -81,9 +87,10 @@ func Decrypt(value string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(value)
 	if err != nil {
 		go logging.Log(&entity.LogDetails{
-			Message: "could not decode string to decrypt",
-			Reason:  err.Error(),
-		}, "critical", nil)
+			Message:  "could not decode string to decrypt",
+			Reason:   err.Error(),
+			Severity: string(constants.SeverityCritical),
+		})
 
 		return "", err
 	}
@@ -91,9 +98,10 @@ func Decrypt(value string) (string, error) {
 	plainText, err := rsa.DecryptPKCS1v15(rand.Reader, private, decoded)
 	if err != nil {
 		go logging.Log(&entity.LogDetails{
-			Message: "could not decrypt",
-			Reason:  err.Error(),
-		}, "critical", nil)
+			Message:  "could not decrypt",
+			Reason:   err.Error(),
+			Severity: string(constants.SeverityCritical),
+		})
 
 		return "", err
 	}
@@ -111,9 +119,10 @@ func ParsePrivateKeyToString() string {
 	priv, err := os.ReadFile("private.pem")
 	if err != nil {
 		go logging.Log(&entity.LogDetails{
-			Message: "could not get private key file",
-			Reason:  err.Error(),
-		}, "critical", nil)
+			Message:  "could not get private key file",
+			Reason:   err.Error(),
+			Severity: string(constants.SeverityCritical),
+		})
 
 		panic(ErrToParsePrivate)
 	}

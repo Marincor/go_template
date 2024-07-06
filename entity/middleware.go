@@ -43,7 +43,7 @@ func (r *Router) Delete(path string, fn http.HandlerFunc, mx ...Middleware) {
 }
 
 func (r *Router) handle(method string, path string, fn http.HandlerFunc, mx []Middleware) {
-	r.Handle(fmt.Sprintf("%s%s", method, path), r.wrap(fn, mx))
+	r.Handle(fmt.Sprintf("%s %s", method, path), r.wrap(fn, mx))
 }
 
 func (r *Router) wrap(fn http.HandlerFunc, mx []Middleware) (out http.Handler) {

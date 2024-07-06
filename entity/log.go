@@ -11,4 +11,5 @@ type LogDetails struct {
 	Method     string      `json:"method"`
 	URLpath    string      `json:"route"`
 	SessionID  string      `json:"sessid"`
+	Severity   string      `json:"severity"`
 }

@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
 
@@ -24,11 +25,13 @@ func FromHTTPRequest(_ *fiber.Ctx) *Request {
 	return &Request{}
 }
 
-func CreateResponse(context *fiber.Ctx, payload interface{}, status ...int) {
+func CreateResponse(w http.ResponseWriter, payload interface{}, status ...int) {
 	returnStatus := http.StatusOK
 	if len(status) > 0 {
 		returnStatus = status[0]
 	}
 
-	context.Status(returnStatus).JSON(payload) //nolint: errcheck
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(returnStatus)
+	json.NewEncoder(w).Encode(payload)
 }

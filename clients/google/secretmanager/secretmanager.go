@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"api.default.marincor.pt/adapters/logging"
+	"api.default.marincor.pt/config/constants"
 	"api.default.marincor.pt/entity"
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
@@ -25,9 +26,10 @@ func newClient() (context.Context, *secretmanager.Client) {
 	client, err := secretmanager.NewClient(ctx)
 	if err != nil {
 		logging.Log(&entity.LogDetails{
-			Message: "error while trying to connect to google cloud secret manager",
-			Reason:  err.Error(),
-		}, "critical", nil)
+			Message:  "error while trying to connect to google cloud secret manager",
+			Reason:   err.Error(),
+			Severity: string(constants.SeverityCritical),
+		})
 
 		panic(err)
 	}
@@ -60,9 +62,10 @@ func (secretmanager *GCPSecretManager) ListSecrets(parent string, filterPrefix s
 
 		if err != nil {
 			logging.Log(&entity.LogDetails{
-				Message: "error to get next secret in google secret manager",
-				Reason:  err.Error(),
-			}, "critical", nil)
+				Message:  "error to get next secret in google secret manager",
+				Reason:   err.Error(),
+				Severity: string(constants.SeverityCritical),
+			})
 
 			panic(err)
 		}
@@ -91,9 +94,10 @@ func (secretmanager *GCPSecretManager) accessSecretVersion(version string) strin
 	})
 	if err != nil {
 		logging.Log(&entity.LogDetails{
-			Message: "error to access secret version in google secret manager",
-			Reason:  err.Error(),
-		}, "critical", nil)
+			Message:  "error to access secret version in google secret manager",
+			Reason:   err.Error(),
+			Severity: string(constants.SeverityCritical),
+		})
 
 		panic(err)
 	}
@@ -118,9 +122,10 @@ func (secretmanager *GCPSecretManager) getSecretLastAvailableVersion(secretName 
 
 		if err != nil {
 			logging.Log(&entity.LogDetails{
-				Message: "error to get secret versions in google secret manager",
-				Reason:  err.Error(),
-			}, "critical", nil)
+				Message:  "error to get secret versions in google secret manager",
+				Reason:   err.Error(),
+				Severity: string(constants.SeverityCritical),
+			})
 
 			panic(err)
 		}

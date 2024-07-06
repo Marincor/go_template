@@ -1,10 +1,9 @@
-package main
+package route
 
 import (
 	"fmt"
 	"net/http"
 
-	"api.default.marincor.pt/app/appinstance"
 	"api.default.marincor.pt/config/constants"
 	"api.default.marincor.pt/entity"
 	"api.default.marincor.pt/handler/health"
@@ -13,11 +12,12 @@ import (
 
 func newRouter(mx ...entity.Middleware) *entity.Router {
 	return &entity.Router{
-		Chain: mx,
+		ServeMux: &http.ServeMux{},
+		Chain:    mx,
 	}
 }
 
-func route() *http.Server {
+func Routes() *entity.Router {
 	allowedOrigins := constants.AllowedOrigins
 	if constants.Environment != constants.Production {
 		allowedOrigins += fmt.Sprintf(", %s", constants.AllowedStageOrigins)
@@ -28,7 +28,8 @@ func route() *http.Server {
 	r.Group(func(r *entity.Router) {
 		// r.Use(middleware.Logger())
 
-		r.Get("/api/health", health.Handle().Check)
+		r.Get("/health/check", health.Handle().Check)
+		r.Get("/health/check/list", health.Handle().List)
 	})
 
 	// appinstance.Data.Server.Use(logger.New())
@@ -73,5 +74,5 @@ func route() *http.Server {
 
 	// Put auth required routes here
 
-	return appinstance.Data.Server
+	return r
 }

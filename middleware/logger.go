@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"log/slog"
+	"io"
 	"net/http"
 	"time"
 
+	"api.default.marincor.pt/adapters/logging"
 	"api.default.marincor.pt/entity"
 )
 
@@ -17,7 +18,18 @@ func Logger() entity.Middleware {
 
 			elapsedTime := time.Since(startTime)
 
-			slog.Info("http request", slog.String("method", r.Method), slog.String("path", r.URL.Path), slog.String("duration", elapsedTime.String()))
+			bodyBytes, _ := io.ReadAll(r.Body)
+
+			go logging.Log(&entity.LogDetails{
+				Message:  "Logger",
+				RemoteIP: r.RemoteAddr,
+				Request: map[string]interface{}{
+					"body":     string(bodyBytes),
+					"query":    r.URL.RawQuery,
+					"path":     r.URL.Path,
+					"duration": elapsedTime.String(),
+				},
+			})
 		})
 	}
 }

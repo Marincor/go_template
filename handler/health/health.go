@@ -3,7 +3,11 @@ package health
 import (
 	"net/http"
 
+	"api.default.marincor.pt/adapters/logging"
 	"api.default.marincor.pt/app/usecases/health"
+	"api.default.marincor.pt/config/constants"
+	"api.default.marincor.pt/entity"
+	"api.default.marincor.pt/pkg/helpers"
 )
 
 type Handler struct {
@@ -17,37 +21,62 @@ func Handle() *Handler {
 }
 
 func (handler *Handler) Check(w http.ResponseWriter, r *http.Request) {
+	check, err := handler.usecase.Check()
+	if err != nil {
+		go logging.Log(&entity.LogDetails{
+			Message:    "error to check health",
+			Reason:     err.Error(),
+			StatusCode: constants.HTTPStatusInternalServerError,
+			Severity:   string(constants.SeverityError),
+		})
 
-	w.Write([]byte("hello"))
+		helpers.CreateResponse(w, &entity.ErrorResponse{
+			Message:     "error to check health",
+			Description: err.Error(),
+			StatusCode:  constants.HTTPStatusInternalServerError,
+		})
+
+		return
+	}
+
+	go logging.Log(&entity.LogDetails{
+		Message:    "successfully health checked",
+		StatusCode: constants.HTTPStatusOK,
+		Severity:   string(constants.SeverityInfo),
+	})
+
+	helpers.CreateResponse(w, check)
 }
 
-// func (handler *Handler) Check(ctx *fiber.Ctx) error {
-// 	check, err := handler.usecase.Check()
-// 	if err != nil {
-// 		ctx.Locals(constants.LogDataKey, &entity.LogDetails{
-// 			Message:    "error to check health",
-// 			Reason:     err.Error(),
-// 			StatusCode: constants.HTTPStatusInternalServerError,
-// 		})
-// 		ctx.Locals(constants.LogSeverityKey, constants.SeverityError)
+func (handler *Handler) List(w http.ResponseWriter, r *http.Request) {
+	checkList, err := handler.usecase.List()
+	if err != nil {
+		go logging.Log(&entity.LogDetails{
+			Message:    "error to check health",
+			Reason:     err.Error(),
+			StatusCode: constants.HTTPStatusInternalServerError,
+			Severity:   string(constants.SeverityError),
+		})
 
-// 		helpers.CreateResponse(ctx, &entity.ErrorResponse{
-// 			Message:     "error to check health",
-// 			Description: err.Error(),
-// 			StatusCode:  constants.HTTPStatusInternalServerError,
-// 		}, constants.HTTPStatusInternalServerError)
+		helpers.CreateResponse(w, &entity.ErrorResponse{
+			Message:     "error to check health",
+			Description: err.Error(),
+			StatusCode:  constants.HTTPStatusInternalServerError,
+		})
 
-// 		return ctx.Next()
-// 	}
+		return
+	}
 
-// 	ctx.Locals(constants.LogDataKey, &entity.LogDetails{
-// 		Message:    "successfully health checked",
-// 		StatusCode: constants.HTTPStatusOK,
-// 		Response:   check,
-// 	})
-// 	ctx.Locals(constants.LogSeverityKey, constants.SeverityInfo)
+	go logging.Log(&entity.LogDetails{
+		Message:    "successfully health checked",
+		StatusCode: constants.HTTPStatusOK,
+		Severity:   string(constants.SeverityInfo),
+	})
 
-// 	helpers.CreateResponse(ctx, check, constants.HTTPStatusOK)
+	listResponse := entity.SuccessListResponse{
+		Data:  checkList,
+		Count: len(checkList),
+	}
 
-// 	return ctx.Next()
-// }
+	helpers.CreateResponse(w, listResponse)
+}

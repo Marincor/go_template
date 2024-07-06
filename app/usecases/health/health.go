@@ -38,3 +38,7 @@ func (usecase *Usecase) Check() (*entity.Health, error) {
 
 	return check, nil
 }
+
+func (usecase *Usecase) List() ([]*entity.Health, error) {
+	return usecase.repo.ListAll()
+}
