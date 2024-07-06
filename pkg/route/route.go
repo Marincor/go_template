@@ -12,7 +12,7 @@ import (
 
 func newRouter(mx ...entity.Middleware) *entity.Router {
 	return &entity.Router{
-		ServeMux: &http.ServeMux{},
+		ServeMux: http.NewServeMux(),
 		Chain:    mx,
 	}
 }
@@ -27,7 +27,11 @@ func Routes() *entity.Router {
 
 	r.Use(middleware.ContentType())
 
-	r.Use(middleware.CORSMiddleware())
+	r.Use(middleware.Cors())
+
+	r.Use(middleware.SecurityHeaders())
+
+	r.Use(middleware.Throttling())
 
 	r.Group(func(route *entity.Router) {
 

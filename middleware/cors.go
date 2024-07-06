@@ -3,19 +3,20 @@ package middleware
 import (
 	"net/http"
 
+	"api.default.marincor.pt/config/constants"
 	"api.default.marincor.pt/entity"
+	"api.default.marincor.pt/pkg/helpers"
 )
 
-func CORSMiddleware() entity.Middleware {
+func Cors() entity.Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "") // change this later
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-			w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Origin", constants.AllowedOrigins) // change this later
+			w.Header().Set("Access-Control-Allow-Headers", constants.AllowedHeaders)
+			w.Header().Set("Access-Control-Allow-Methods", constants.AllowedMethods)
 
 			if r.Method == "OPTIONS" {
-				w.WriteHeader(204)
+				helpers.CreateResponse(w, nil)
 				return
 			}
 

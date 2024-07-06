@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"api.default.marincor.pt/adapters/logging"
+	"api.default.marincor.pt/config/constants"
 	"api.default.marincor.pt/entity"
 )
 
@@ -18,6 +19,9 @@ func Logger() entity.Middleware {
 
 			elapsedTime := time.Since(startTime)
 
+			statusCode := w.Header().Get(constants.StatusCodeContextKey)
+			w.Header().Del(constants.StatusCodeContextKey)
+
 			bodyBytes, _ := io.ReadAll(r.Body)
 
 			go logging.Log(&entity.LogDetails{
@@ -28,6 +32,9 @@ func Logger() entity.Middleware {
 					"query":    r.URL.RawQuery,
 					"path":     r.URL.Path,
 					"duration": elapsedTime.String(),
+				},
+				Response: map[string]interface{}{
+					"status_code": statusCode,
 				},
 			})
 		})

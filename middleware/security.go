@@ -1,18 +1,24 @@
 package middleware
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"net/http"
 
-func SecurityHeaders() func(context *fiber.Ctx) error {
-	return func(context *fiber.Ctx) error {
-		context.Response().Header.Add("X-XSS-Protection", "1; mode=block")
-		context.Response().Header.Add("X-Content-Type-Options", "nosniff")
-		context.Response().Header.Add("X-Frame-Options", "Deny")
-		context.Response().Header.Add("Cache-Control", "no-store")
-		context.Response().Header.Add("Content-Security-Policy", "frame-ancestors 'none'")
-		context.Response().Header.Add("Content-Security-Policy", "default-src 'none'")
-		context.Response().Header.Add("Referrer-Policy", "no-referrer")
-		context.Response().Header.Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+	"api.default.marincor.pt/entity"
+)
 
-		return context.Next()
+func SecurityHeaders() entity.Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("X-XSS-Protection", "1; mode=block")
+			w.Header().Add("X-Content-Type-Options", "nosniff")
+			w.Header().Add("X-Frame-Options", "Deny")
+			w.Header().Add("Cache-Control", "no-store")
+			w.Header().Add("Content-Security-Policy", "frame-ancestors 'none'")
+			w.Header().Add("Content-Security-Policy", "default-src 'none'")
+			w.Header().Add("Referrer-Policy", "no-referrer")
+			w.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+
+			next.ServeHTTP(w, r)
+		})
 	}
 }

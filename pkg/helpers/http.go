@@ -2,9 +2,11 @@ package helpers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 
+	"api.default.marincor.pt/config/constants"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -32,6 +34,10 @@ func CreateResponse(w http.ResponseWriter, payload interface{}, status ...int) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	w.WriteHeader(returnStatus)
+
+	w.Header().Add(constants.StatusCodeContextKey, fmt.Sprintf("%d", returnStatus))
+
 	json.NewEncoder(w).Encode(payload)
 }
