@@ -11,7 +11,7 @@ import (
 	"api.default.marincor.pt/clients/mongodb"
 	"api.default.marincor.pt/config"
 	"api.default.marincor.pt/config/constants"
-	"api.default.marincor.pt/pkg/route"
+	"api.default.marincor.pt/route"
 )
 
 func ApplicationInit() {
